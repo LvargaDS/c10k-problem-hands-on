@@ -7,8 +7,15 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>cgi-approach</artifactId>
+    <artifactId>io_uring-approach</artifactId>
     <packaging>jar</packaging>
     <version>1.0-SNAPSHOT</version>
-    <name>cgi-approach</name>
+    <name>io_uring-approach</name>
+    <dependencies>
+        <dependency>
+            <groupId>sh.blake.niouring</groupId>
+            <artifactId>nio_uring</artifactId>
+            <version>0.1.2</version>
+        </dependency>
+    </dependencies>
 </project>

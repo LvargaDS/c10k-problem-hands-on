@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>C10k problem from java forld perspective</title>
+    <meta charset="utf-8">
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body { font-family: 'Droid Serif'; }
+      h1, h2, h3 {
+        font-family: 'Yanone Kaffeesatz';
+        font-weight: normal;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+class: center, middle
+
+# C10k problem from java world perspective
+
+This presentation is intended as light intro into a deep topic with slight (and random) info from history.
+
+Ľubomír Varga from digitalsystems.eu
+
+[show presentation notes](#p1)
+
+???
+Wait till there are enough listeners :)
+
+---
+
+# Agenda
+
+1. Introduction to C10k problem
+2. A little bit of history
+3. Technological approaches (http world)
+4. Simulating many devices efficiently
+
+---
+
+# Introduction
+
+* C10K stands for 10_000 concurrent connections.
+* Serving many concurrent connections.
+* Maintaining latency and
+* connections (TCP stack) for each client.
+
+---
+
+# A little bit of history
+
+* cdrom.com (ftp server), 10_000 connections, single core, 1GB memory, 1999
+* 2001, epoll gets into kernel 2.6
+* WhatsUp, 2_000_000 connections, 24core server, 2011–2012
+* C10M as successor
+
+
+???
+It originates long after cgi scripts served dynamic web pages, and www world has been dominated by LAMP (linux apache mysql php). It was coined after cdrom.com has reached given number of parallel connections on their ftp server. https://en.wikipedia.org/wiki/C10k_problem
+
+The Next step was WhatsUp, serving 2_000_000 connections in parallel on commodity server using erlang app. Late C10M was introduced (using java app).
+
+---
+
+# Technological approaches for backends
+
+* Xinetd -> redirect stdi/stdout to TCP/UDP of any program
+* the world wide web has been born
+* cgi for serving files and also dynamic html pages
+  * app generates response
+* application servers
+  * running app serves response
+    * html code hardcoded in-app code (php)
+    * code in html (jsp)
+    * templating languages (wicket, FreeMarker)
+* self-contained backends (embedded undertow, tomcat, ...)
+* vm as http server
+* lambda functions
+
+???
+
+CGI (common gateway interface), basically parse http headers, and when target url points to "html" file, it is served back. If it points to executable, it is started and its stdout output is sent back to a client as html...
+Mostly c/c++ cgi scripts, sometimes perl and other scripting languages.
+
+To lover latency of response, instead of starting a program, we can always have started application server, which has business code compiled into it.
+
+Other approaches are from c10k problem point of view mostly identical. One does have fewer problems with kernel tuning, another is more complex to code...
+
+---
+
+# Simulating many tcp devices efficiently
+
+* simulate many tcp clients (between 100k and one million)
+* simple state machine communication protocol
+* each client should have its ip address and port
+* lets say, we simulate:
+  * electronic toothbrushes
+  * IP telephones
+  * IoT devices like light bulbs, charging stations for electric cars
+* we would like to simulate also network properties (latency and packet loss of GPRS)
+
+???
+This was my problem to solve, so I will talk about this specific problem and show possible approaches and their efficiencies.
+
+Ip addresses can be shared to save IP addresses. It does not make any difference.
+
+---
+
+# CGI like approach
+
+```java
+ServerSocket serverSocket = new ServerSocket(port);
+Socket clientSocket = serverSocket.accept();
+BufferedReader out = new PrintWriter(clientSocket.getOutputStream(), true);
+PrintWriter in = new BufferedReader(
+        new InputStreamReader(clientSocket.getInputStream()));
+while ((inputLine = in.readLine()) != null) {
+    if (inputLine.equals(secretPassword)) {
+        out.println("You hit it. All your base belong to us.");
+    } else {
+        out.println("no");
+    }
+}
+```
+    </textarea>
+    <script src="https://remarkjs.com/downloads/remark-latest.min.js">
+    </script>
+    <script>
+      var slideshow = remark.create();
+    </script>
+  </body>
+</html>
+
